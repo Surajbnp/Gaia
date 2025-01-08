@@ -50,6 +50,7 @@ const contractAddress = "0x9eb54E00863b6e12eed39B6081E018fec8336EBc";
 
 const weatherPhrases = [
   "weather",
+  "weather at",
   "what is the weather",
   "what's the weather",
   "weather of",
@@ -74,12 +75,26 @@ bot.on("message", async (msg) => {
       - Just type the commands in private or group chats.
       
       *🤖 Available Commands*:
-      1. *🌟 Start* - Get to know about GAIA and access important links.
-      2. *🌟 Greetings* - Say \`hi\`, \`hello\`, or \`gm\` for a friendly response.
-      3. *📄 Saved Messages* - Save and retrieve important messages.
-      4. *🌦️ Weather* - Type \`weather <city_name>\` to get the current weather.
-      5. *📝 Contract Address* - Type \`ca\` to get the contract address.
-      6. *💰 Buy Link* - Type \`buy link\` for the buy link.
+      1. *🌟 Start*  
+         - Get to know about GAIA and access important links.
+      
+      2. *🌟 Greetings*  
+         - Say \`hi\`, \`hello\`, or \`gm\` for a friendly response.
+      
+      3. *📄 Save Message*  
+         - Reply a message & Type \`save this\` to save an important message.
+      
+      4. *📄 Get Saved Messages*  
+         - Type \`get saved\` to retrieve your saved messages.
+      
+      5. *🌦️ Weather*  
+         - Type \`weather <city_name>\` to get the current weather.
+      
+      6. *📝 Contract Address*  
+         - Type \`ca\` to get the contract address.
+      
+      7. *💰 Buy Link*  
+         - Type \`buy link\` for the buy link.
       
       ✨ Enjoy using the bot! 😊
       `;
@@ -182,7 +197,7 @@ bot.on("message", async (msg) => {
 
       const location = cleanedMessage
         .replace(
-          /weather of|weather|weather in|how is the weather of|what is the weather of|temperature in|what's the weather in|weather of|weather details of|what's the weather like in|current weather in|forecast for|climate of|is it raining in|weather report of/i,
+          /weather of|weather|weather at|weather in|how is the weather of|what is the weather of|temperature in|what's the weather in|weather of|weather details of|what's the weather like in|current weather in|forecast for|climate of|is it raining in|weather report of/i,
           ""
         )
         .trim();
