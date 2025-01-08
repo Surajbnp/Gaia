@@ -45,101 +45,55 @@ const greetingReplies = [
   (userName) => `Morning, ${userName}! 🌅 What’s up today? 🌻`,
 ];
 
-function getDynamicGreeting(userName) {
-  const currentHour = new Date().getHours();
-
-  if (currentHour < 12) {
-    return `Good morning, ${userName}! 🌞 How can I assist you today?`;
-  } else if (currentHour < 18) {
-    return `Good afternoon, ${userName}! ☀️ Hope you're having a great day!`;
-  } else {
-    return `Good evening, ${userName}! 🌜 How can I help you tonight?`;
-  }
-}
-
 const savedMessages = {};
 const contractAddress = "0x9eb54E00863b6e12eed39B6081E018fec8336EBc";
 
+const weatherPhrases = [
+  "weather",
+  "what is the weather",
+  "what's the weather",
+  "weather of",
+  "how is the weather",
+  "weather in",
+  "temperature in",
+];
+
 bot.on("message", async (msg) => {
   try {
-    const userName = msg.from.first_name;
-    const userMessage = msg.text?.toLowerCase();
+    const userName = msg.from.first_name || "User";
+    const userMessage = msg.text?.toLowerCase().trim();
     const chatId = msg.chat.id;
 
-    const isGroupChat =
-      msg.chat.type === "group" || msg.chat.type === "supergroup";
-    const botUsername = (await bot.getMe()).username;
+    if (!userMessage) return;
 
-    let command = userMessage;
-
-    if (isGroupChat) {
-      if (command.includes(`@${botUsername}`)) {
-        command = command.replace(`@${botUsername}`, "").trim();
-      } else {
-        return;
-      }
-    }
-
-    if (!command) return;
-
-    if (command === "help") {
+    if (userMessage === "help") {
       const helpText = `
-    👋 **Hello, *${userName}*!** Welcome to the bot. Here’s what I can do:
-    
-    📜 *General Instructions*:
-    - 🗨️ *In Private Chat*: You don't need to tag me; just type the commands.
-    - 👥 *In Group Chat*: Make sure to tag me (e.g., \`@${botUsername}\`) when using commands.
-    
-    🤖 *Available Commands*:
-
-    1. *🌟 Start*:
-     - Intract and know about GAIA, and get links.
-    
-    2. *🌟 Greetings*:
-       - Say \`hi\`, \`hello\`, \`hey\`, or \`gm\` to get a friendly response.
-    
-    3. *📄 Saved Messages*:
-       - 🔄 **To Save**: Reply to a message with \`save this\`.
-       - 📤 **To Retrieve**: Use \`get saved messages\`.
-    
-    4. *🌦️ Weather*:
-       - Type \`weather <city_name>\` to get the current weather.
-       - Example: \`weather New York\`.
-    
-    5. *📝 Contract Address*:
-       - Type \`ca\` to get the contract address.
-
-    6. *💰 Buy Link*:
-       - Type \`buy link\` to get the link to buy $GAIA.
-    
-    7. *ℹ️ Help*:
-       - Type \`help\` to display this message again.
-    
-    ✨ Enjoy using the bot! If you have any issues, feel free to reach out. 😊
+      👋 **Hello, *${userName}*!** Welcome to the bot. Here’s what I can do:
+            
+      *📜 General Instructions*:
+      - Just type the commands in private or group chats.
+      
+      *🤖 Available Commands*:
+      1. *🌟 Start* - Get to know about GAIA and access important links.
+      2. *🌟 Greetings* - Say \`hi\`, \`hello\`, or \`gm\` for a friendly response.
+      3. *📄 Saved Messages* - Save and retrieve important messages.
+      4. *🌦️ Weather* - Type \`weather <city_name>\` to get the current weather.
+      5. *📝 Contract Address* - Type \`ca\` to get the contract address.
+      6. *💰 Buy Link* - Type \`buy link\` for the buy link.
+      
+      ✨ Enjoy using the bot! 😊
       `;
+
       await bot.sendMessage(chatId, helpText, { parse_mode: "Markdown" });
+      return;
     }
 
-    bot.on("callback_query", async (callbackQuery) => {
-      const chatId = callbackQuery.message.chat.id;
-      const callbackData = callbackQuery.data;
-
-      if (callbackData === "contract_address") {
-        await bot.sendMessage(
-          chatId,
-          `✅ Here is the Contract Address:\n\n\`0x9eb54E00863b6e12eed39B6081E018fec8336EBc\``,
-          { parse_mode: "Markdown" }
-        );
-        await bot.answerCallbackQuery(callbackQuery.id);
-      }
-    });
-
-    if (command === "start") {
+    if (userMessage === "start") {
       await bot.sendAnimation(
         chatId,
         "https://res.cloudinary.com/dddnxiqpq/video/upload/v1735885389/Gaia__the_angel_of_nature_with_Green_hair__green_eyes__elvish_clothes_hfx3d5.mp4",
         {
-          caption: `**GAIA 🌱🤖**\n\nGaia is a nurturing AI agent inspiring sustainability through creativity, engagement, and Regenerative Finance, creating abundance for the whole planet. 🌎`,
+          caption: `**GAIA 🌱🤖**\n\nGaia is a nurturing AI agent inspiring sustainability through creativity and engagement. 🌎`,
           parse_mode: "Markdown",
           reply_markup: {
             inline_keyboard: [
@@ -156,57 +110,52 @@ bot.on("message", async (msg) => {
                 },
               ],
               [
-                {
-                  text: "Follow Community 📡",
-                  url: "https://t.me/gaiaawake",
-                },
-                {
-                  text: "Follow X 🚀",
-                  url: "https://x.com/gaiaawake",
-                },
+                { text: "Follow Community 📡", url: "https://t.me/gaiaawake" },
+                { text: "Follow X 🚀", url: "https://x.com/gaiaawake" },
               ],
             ],
           },
         }
       );
+      return;
     }
 
-    // Contract Address Command
-
-    const contractAddressPhrases = [
-      "ca",
-      "contract address",
-      "what is the contract address",
-      "can you give me the contract address",
-      "contract address gaia",
-    ];
-
+    const contractAddressPhrases = ["ca", "contract address", "contract"];
     if (contractAddressPhrases.some((phrase) => userMessage.includes(phrase))) {
       await bot.sendMessage(
         chatId,
-        `✅ Here is the Contract Address:\n\n\`${contractAddress}\``,
+        `✅ Contract Address:\n\n\`${contractAddress}\``,
         { parse_mode: "Markdown" }
       );
       return;
     }
 
-    // Buy Link Command
-    const buyLinkPatterns = [
-      /gaia.*buy.*link/i,
-      /what.*buy.*link/i,
-      /.*buy.*link/i,
-    ];
-
+    const buyLinkPatterns = [/buy.*link/i];
     if (buyLinkPatterns.some((pattern) => pattern.test(userMessage))) {
       await bot.sendMessage(
         chatId,
-        `✅ Here is the Buy Link:\n\n\`https://app.virtuals.io/prototypes/0x9eb54E00863b6e12eed39B6081E018fec8336EBc/terminal\``,
+        `✅ Buy Link:\n\n\`https://app.virtuals.io/prototypes/0x9eb54E00863b6e12eed39B6081E018fec8336EBc/terminal\``,
         { parse_mode: "Markdown" }
       );
       return;
     }
 
-    if (command.includes("get saved messages")) {
+    if (msg.reply_to_message && userMessage === "save this") {
+      const replyText = msg.reply_to_message.text;
+      if (!savedMessages[chatId]) savedMessages[chatId] = [];
+      savedMessages[chatId].push(replyText);
+      await bot.sendMessage(
+        chatId,
+        `
+        ✅ **Message Saved Successfully!**
+          
+        To retrieve your saved messages, type: \`get saved\`
+        `
+      );
+      return;
+    }
+
+    if (userMessage.includes("get saved")) {
       const messages = savedMessages[chatId] || [];
       if (messages.length > 0) {
         await bot.sendMessage(
@@ -219,27 +168,21 @@ bot.on("message", async (msg) => {
       return;
     }
 
-    // Weather Command
-    // Weather Command
-    const weatherPhrases = [
-      "weather",
-      "what is the weather",
-      "what's the weather",
-      "weather of",
-      "how is the weather",
-      "weather in",
-      "temperature in",
-    ];
+    if (greetings.includes(userMessage)) {
+      const randomGreeting =
+        greetingReplies[Math.floor(Math.random() * greetingReplies.length)];
+      await bot.sendMessage(chatId, randomGreeting(userName));
+      return;
+    }
 
     if (weatherPhrases.some((phrase) => userMessage.includes(phrase))) {
-      // Remove the bot's tag if the message includes it
       const cleanedMessage = userMessage
-        .replace(/@\w+\s*/, "") // Removes "@YourBotUsername"
+        .replace(/@\w+\s*/, "@gaiaishere_bot")
         .trim();
 
       const location = cleanedMessage
         .replace(
-          /weather of|weather in|how is the weather of|what is the weather of|temperature in|what's the weather in|weather of|weather details of|what's the weather like in|current weather in|forecast for|climate of|is it raining in|weather report of/i,
+          /weather of|weather|weather in|how is the weather of|what is the weather of|temperature in|what's the weather in|weather of|weather details of|what's the weather like in|current weather in|forecast for|climate of|is it raining in|weather report of/i,
           ""
         )
         .trim();
@@ -281,15 +224,12 @@ bot.on("message", async (msg) => {
           { parse_mode: "Markdown" }
         );
       } catch (error) {
-        console.error(
-          "Error fetching weather:",
-          error.response?.data || error.message
-        );
+        console.error("Error fetching weather:", error.message);
 
         if (error.response && error.response.data.cod === "404") {
           await bot.sendMessage(
             chatId,
-            `❌ City not found! Please check the spelling or try including the country name. Example: "Weather in Ranchi"`
+            '❌ City not found! Please check the spelling or try including the country name. Example: "Weather in Ranchi"'
           );
         } else {
           await bot.sendMessage(
@@ -300,24 +240,29 @@ bot.on("message", async (msg) => {
       }
       return;
     }
-
-    if (greetings.includes(command)) {
-      const dynamicReply = getDynamicGreeting(userName);
-      bot.sendMessage(chatId, dynamicReply);
-    }
   } catch (error) {
-    console.error("Error handling message:", error);
+    console.error("Error handling message:", error.message);
+    if (msg.chat) {
+      await bot.sendMessage(
+        msg.chat.id,
+        "❌ An error occurred. Please try again later."
+      );
+    }
   }
 });
 
-bot.on("polling_error", (error) => {
-  console.error("Polling error:", error);
+bot.on("callback_query", async (callbackQuery) => {
+  const chatId = callbackQuery.message.chat.id;
+  const callbackData = callbackQuery.data;
+
+  if (callbackData === "contract_address") {
+    await bot.sendMessage(
+      chatId,
+      `✅ Contract Address:\n\n\`${contractAddress}\``,
+      { parse_mode: "Markdown" }
+    );
+    await bot.answerCallbackQuery(callbackQuery.id);
+  }
 });
 
-app.get("/", (req, res) => {
-  res.send("Home Page");
-});
-
-app.listen(8080, () => {
-  console.log("Server is running on port 8080");
-});
+app.listen(3000, () => console.log("Server running on port 3000"));
