@@ -247,7 +247,7 @@ bot.on("message", async (msg) => {
       if (!location) {
         await bot.sendMessage(
           chatId,
-          "❌ Please provide a city or country name. Example: weather New York or what's the weather of Ranchi 🌍"
+          "❌ Please provide a city or country name. Example: weather in New York or what's the weather of Ranchi 🌍"
         );
         return;
       }
@@ -289,7 +289,7 @@ bot.on("message", async (msg) => {
         if (error.response && error.response.data.cod === "404") {
           await bot.sendMessage(
             chatId,
-            `❌ City not found! Please check the spelling or try including the country name. Example: "Weather Ranchi, IN"`
+            `❌ City not found! Please check the spelling or try including the country name. Example: "Weather in Ranchi"`
           );
         } else {
           await bot.sendMessage(
