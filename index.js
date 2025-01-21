@@ -13,9 +13,8 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(cookieParser("surja4"));
 
-const BOT_TOKEN = "7949109647:AAGCsnEf4EpjcT7pB-orOXjPv-bP76h9Ao0";
-const groq = new Groq({ apiKey: "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" });
-const bot = new TelegramBot(BOT_TOKEN, {
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const bot = new TelegramBot(process.env.BOT_TOKEN, {
   polling: {
     interval: 1000,
     autoStart: true,
