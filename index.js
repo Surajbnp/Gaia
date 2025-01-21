@@ -16,7 +16,7 @@ app.use(cookieParser("surja4"));
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const bot = new TelegramBot(process.env.BOT_TOKEN, {
   polling: {
-    interval: 1000,
+    interval: 500,
     autoStart: true,
     params: { timeout: 10 },
   },
@@ -74,6 +74,11 @@ const weatherPhrases = [
 ];
 
 bot.on("message", async (msg) => {
+
+  // checking wheter it's group chat or it's a private chat
+   const isGroupChat = msg.chat.type === "group" || msg.chat.type === "supergroup";
+
+
   try {
     const userName = msg.from.first_name || "User";
     const userMessage = msg.text?.toLowerCase().trim();
@@ -81,6 +86,7 @@ bot.on("message", async (msg) => {
 
     if (!userMessage) return;
 
+    // Help command
     if (userMessage === "help") {
       const helpText = `
       👋 **Hello, *${userName}*!** Welcome to the bot. Here’s what I can do:
@@ -117,6 +123,7 @@ bot.on("message", async (msg) => {
       return;
     }
 
+    // Start command
     if (userMessage === "start") {
       await bot.sendAnimation(
         chatId,
@@ -149,6 +156,7 @@ bot.on("message", async (msg) => {
       return;
     }
 
+    // Contract address command
     const contractAddressPhrases = ["contract address", "contract"];
     if (contractAddressPhrases.some((phrase) => userMessage.includes(phrase))) {
       await bot.sendMessage(
@@ -159,6 +167,7 @@ bot.on("message", async (msg) => {
       return;
     }
 
+    // Buy link command
     const buyLinkPatterns = [/buy.*link/i];
     if (buyLinkPatterns.some((pattern) => pattern.test(userMessage))) {
       await bot.sendMessage(
@@ -169,6 +178,7 @@ bot.on("message", async (msg) => {
       return;
     }
 
+    // Save a message
     if (msg.reply_to_message && userMessage === "save this") {
       const replyText = msg.reply_to_message.text;
       if (!savedMessages[chatId]) savedMessages[chatId] = [];
@@ -184,6 +194,7 @@ bot.on("message", async (msg) => {
       return;
     }
 
+    // Get saved messages
     if (userMessage.includes("get saved")) {
       const messages = savedMessages[chatId] || [];
       if (messages.length > 0) {
@@ -197,6 +208,7 @@ bot.on("message", async (msg) => {
       return;
     }
 
+    // Greetings
     if (greetings.includes(userMessage)) {
       const randomGreeting =
         greetingReplies[Math.floor(Math.random() * greetingReplies.length)];
@@ -204,6 +216,7 @@ bot.on("message", async (msg) => {
       return;
     }
 
+    // Weather
     if (weatherPhrases.some((phrase) => userMessage.includes(phrase))) {
       const cleanedMessage = userMessage
         .replace(/@\w+\s*/, "@gaiaishere_bot")
@@ -258,7 +271,7 @@ bot.on("message", async (msg) => {
         if (error.response && error.response.data.cod === "404") {
           await bot.sendMessage(
             chatId,
-            '❌ City not found! Please check the spelling or try including the country name. Example: "Weather in Ranchi"'
+            '❌ City not found! Please check the spelling or try including the country name. Example: "Weather of Ranchi"'
           );
         } else {
           await bot.sendMessage(
@@ -269,15 +282,19 @@ bot.on("message", async (msg) => {
       }
       return;
     }
-    else{
-      const chatCompletion = await getGroqChatCompletion(userMessage);
-      await bot.sendMessage(
-        chatId,
-        `${chatCompletion.choices[0]?.message?.content || ""}`,
-        { parse_mode: "Markdown" }
-      );
-      return;
-    }
+
+ // Groq chatbot response - Only respond if @gaiaishere_bot is tagged
+if (isGroupChat && userMessage.includes("@gaiaishere_bot") || isGroupChat === false && userMessage) {
+  const chatCompletion = await getGroqChatCompletion(userMessage);
+  await bot.sendMessage(
+    chatId,
+    `${chatCompletion.choices[0]?.message?.content || ""}`,
+    { parse_mode: "Markdown" }
+  );
+  return;
+}
+
+// here i am only adding the default response
   } catch (error) {
     console.error("Error handling message:", error.message);
     if (msg.chat) {
