@@ -6,13 +6,15 @@ const TelegramBot = require("node-telegram-bot-api");
 const cors = require("cors");
 const axios = require("axios");
 const app = express();
+const Groq = require("groq-sdk");
 
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
 app.use(cookieParser("surja4"));
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
+const BOT_TOKEN = "7949109647:AAGCsnEf4EpjcT7pB-orOXjPv-bP76h9Ao0";
+const groq = new Groq({ apiKey: "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" });
 const bot = new TelegramBot(BOT_TOKEN, {
   polling: {
     interval: 1000,
@@ -35,6 +37,19 @@ const greetings = [
   "hi gaia",
   "hello gaia",
 ];
+
+// groq function to get chat completion
+async function getGroqChatCompletion(userMessage) {
+  return groq.chat.completions.create({
+    messages: [
+      {
+        role: "user",
+        content: userMessage,
+      },
+    ],
+    model: "llama-3.3-70b-versatile",
+  });
+}
 
 const greetingReplies = [
   (userName) => `Hi ${userName}! How can I help you today? 😊`,
@@ -135,7 +150,7 @@ bot.on("message", async (msg) => {
       return;
     }
 
-    const contractAddressPhrases = ["ca", "contract address", "contract"];
+    const contractAddressPhrases = ["contract address", "contract"];
     if (contractAddressPhrases.some((phrase) => userMessage.includes(phrase))) {
       await bot.sendMessage(
         chatId,
@@ -211,7 +226,7 @@ bot.on("message", async (msg) => {
       }
 
       try {
-        const apiKey = process.env.WEATHER_API_KEY;
+        const apiKey = "6198977deb06f9bc369c596a9888dfb3";
         const weatherAPIUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${apiKey}`;
 
         const response = await axios.get(weatherAPIUrl);
@@ -253,6 +268,15 @@ bot.on("message", async (msg) => {
           );
         }
       }
+      return;
+    }
+    else{
+      const chatCompletion = await getGroqChatCompletion(userMessage);
+      await bot.sendMessage(
+        chatId,
+        `${chatCompletion.choices[0]?.message?.content || ""}`,
+        { parse_mode: "Markdown" }
+      );
       return;
     }
   } catch (error) {
